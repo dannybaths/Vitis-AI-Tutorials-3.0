@@ -5,11 +5,23 @@
 
 ## Author: Daniele Bagni, AMD/Xilinx Inc
 
-## date 26 May 2023
+## date 10 Aug 2023
 
 # REMEMBER THAT $1 is the "main" routine
 LOG_FILENAME=$2
 MODEL_NAME=$3
+
+
+echo " "
+echo "==========================================================================="
+echo "WARNING: "
+echo "  'run_all.sh' MUST ALWAYS BE LAUNCHED BELOW THE 'files' FOLDER LEVEL "
+echo "  (SAME LEVEL OF 'scripts' AND 'target' FOLDER                        "
+echo "  AS IT APPLIES RELATIVE PATH AND NOT ABSOLUTE PATHS                  "
+echo "==========================================================================="
+echo " "
+
+
 
 
 # ===========================================================================
@@ -49,16 +61,19 @@ echo "[DB INFO STEP3] Unzip ResNet18 CNN"
 echo "----------------------------------------------------------------------------------"
 echo " "
 # unzip ResNet18 model zoo archive
-if [ -f "./pt_vehicle-color-classification_VCoR_224_224_3.64G_3.0.zip" ]
+if [ -f "./pt_vehicle-color-classification_3.5.zip" ]
 then
-echo "pt_vehicle-color-classification_VCoR_224_224_3.64G_3.0.zip file is found"
-#unzip pt_vehicle-color-classification_VCoR_224_224_3.64G_3.0.zip
-cd pt_vehicle-color-classification_VCoR_224_224_3.64G_3.0
-# clean some files/folders
-rm -rf code data *.md *.txt *.sh
-cd ..
+  echo "pt_vehicle-color-classification_3.5.zip file is found"
+  if ![ -d "./pt_vehicle-color-classification_3.5" ]
+  then
+    unzip pt_vehicle-color-classification_3.5.zip
+  fi
+  cd pt_vehicle-color-classification_3.5
+  # clean some files/folders
+  rm -rf code data *.md *.txt *.sh
+  cd ..
 else
-echo "ERROR: pt_vehicle-color-classification_VCoR_224_224_3.64G_3.0.zip file is NOT found"
+  echo "ERROR: pt_vehicle-color-classification_3.5.zip file is NOT found"
 fi
 # floating point model training
 echo " "
@@ -67,7 +82,6 @@ echo "[DB INFO STEP3A] VCoR TRAINING"
 echo "----------------------------------------------------------------------------------"
 echo " "
 bash -x ./scripts/run_train.sh
-# floating point model testing
 echo " "
 echo "----------------------------------------------------------------------------------"
 echo "[DB INFO STEP3B] VCoR TESTING"
@@ -162,7 +176,14 @@ cp -r ./build/target/  ./build/target_v70  > /dev/null
 rm -f ./build/target_v70/vcor/zcu1*_vcor.xmodel
 rm -f ./build/target_v70/vcor/vek2*_vcor.xmodel
 rm -f ./build/target_v70/vcor/vck*_vcor.xmodel
-
+# built tar files
+cd ./build
+tar -cvf ./target_vek280.tar  ./target_vek280
+tar -cvf ./target_vck190.tar  ./target_vck190
+tar -cvf ./target_zcu102.tar  ./target_zcu102
+tar -cvf ./target_v70.tar     ./target_v70
+tar -cvf ./target_vck5000.tar ./target_vck5000
+cd ..
 }
 
 # ===========================================================================
@@ -173,9 +194,6 @@ rm -f ./build/target_v70/vcor/vck*_vcor.xmodel
 main_vcor(){
   echo " "
   echo " "
-  #pip install randaugment
-  #pip install torchsummary
-  clean_dos2unix          # 1
   #vcor_dataset            # 2
   #vcor_training           # 3
   vcor_quantize_resnet18  # 4
@@ -196,8 +214,10 @@ main_vcor(){
 
 # do not change the order of the following commands
 main_all(){
-  main_vcor    # 1 to  6
-  #main_imagenet   # 7 to 11
+    #pip install randaugment
+    #pip install torchsummary
+    clean_dos2unix
+    main_vcor
 }
 
 
